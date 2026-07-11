@@ -23,6 +23,14 @@ export function Registry() {
       id="registry"
       className="relative overflow-hidden py-10 sm:py-12 md:py-16 lg:py-20"
     >
+      {/* Background image */}
+      <Image
+        src="/Details/background.png"
+        alt="Registry background"
+        fill
+        className="object-cover z-0"
+        priority={false}
+      />
       <GoldenCornerSparkles className="z-0" />
 
       <div className="relative z-10 text-center mb-6 sm:mb-8 md:mb-10 px-3 sm:px-4">

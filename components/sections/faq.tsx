@@ -7,6 +7,7 @@ import { Section } from "@/components/section"
 import { GoldenCornerSparkles } from "@/components/decoration/golden-corner-sparkles"
 import { Cormorant_Garamond, Cinzel } from "next/font/google"
 import { useSiteConfig } from "@/hooks/use-site-config"
+import Image from "next/image"
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
@@ -195,6 +196,14 @@ export function FAQ() {
       </div>
 
       <Section id="faq" className="relative z-10 py-12 md:py-16 lg:py-20 overflow-hidden">
+      {/* Background image */}
+      <Image
+        src="/Details/backgroundnew.png"
+        alt="FAQ background"
+        fill
+        className="object-cover z-0"
+        priority={false}
+      />
       <GoldenCornerSparkles className="z-0" />
 
       {/* Section Header */}

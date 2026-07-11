@@ -7,8 +7,7 @@ import { motion } from "motion/react"
 import { Cormorant_Garamond, Cinzel } from "next/font/google"
 import { useSiteConfig } from "@/hooks/use-site-config"
 import Counter from "@/components/Counter"
-import { CloudinaryImage } from "@/components/ui/cloudinary-image"
-
+import Image from "next/image"
 interface TimeLeft {
   days: number
   hours: number
@@ -174,6 +173,14 @@ export function Countdown() {
       id="countdown"
       className="relative py-10 sm:py-12 md:py-16 lg:py-20 overflow-hidden"
     >
+      {/* Background image */}
+      <Image
+        src="/Details/background.png"
+        alt="Countdown background"
+        fill
+        className="object-cover z-0"
+        priority={false}
+      />
       <GoldenCornerSparkles className="z-0" />
       
       {/* Monogram - centered at top */}
@@ -185,7 +192,7 @@ export function Countdown() {
           className="relative"
         >
           <div className="relative w-72 h-72 sm:w-96 sm:h-96 md:w-[28rem] md:h-[28rem] lg:w-[36rem] lg:h-[36rem] xl:w-[40rem] xl:h-[40rem] opacity-90">
-            <CloudinaryImage
+            <Image
               src={siteConfig.couple.monogram}
               alt={`${groomNickname} & ${brideNickname} Monogram`}
               fill

@@ -185,10 +185,13 @@ export function BookOfGuests() {
       id="guests"
       className="relative z-10 py-4 sm:py-8 md:py-12 lg:py-16 overflow-hidden isolate"
     >
-      {/* Background — warm brown */}
-      <div
-        className="absolute inset-0 -z-10"
-        style={{ backgroundColor: 'var(--color-motif-cream)' }}
+      {/* Background image */}
+      <Image
+        src="/Details/backgroundnew.png"
+        alt="Book of guests background"
+        fill
+        className="object-cover -z-10"
+        priority={false}
       />
 
       <GoldenCornerSparkles className="z-0" />

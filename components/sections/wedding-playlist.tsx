@@ -7,6 +7,7 @@ import { useSiteConfig } from "@/hooks/use-site-config"
 import { useAudio } from "@/contexts/audio-context"
 import { Cormorant_Garamond, Cinzel } from "next/font/google"
 import { Music2, ExternalLink } from "lucide-react"
+import Image from "next/image"
 
 interface SpotifyPlaybackUpdate {
   playingURI: string
@@ -163,6 +164,14 @@ export function WeddingPlaylist() {
       id="playlist"
       className="relative overflow-hidden bg-transparent py-12 sm:py-16 md:py-20"
     >
+      {/* Background image */}
+      <Image
+        src="/Details/background.png"
+        alt="Playlist background"
+        fill
+        className="object-cover z-0"
+        priority={false}
+      />
       <GoldenCornerSparkles className="z-0" />
 
       <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 md:px-8">

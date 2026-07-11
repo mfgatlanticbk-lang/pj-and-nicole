@@ -9,6 +9,7 @@ import { MapPin } from "lucide-react"
 import { motion } from "motion/react"
 import { Cormorant_Garamond, Cinzel } from "next/font/google"
 import { CloudinaryImage } from "@/components/ui/cloudinary-image"
+import Image from "next/image"
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
@@ -103,6 +104,14 @@ export function WeddingTimeline() {
       id="wedding-timeline"
       className="relative py-10 sm:py-12 md:py-16 lg:py-20 overflow-hidden"
     >
+      {/* Background image */}
+      <Image
+        src="/Details/background.png"
+        alt="Timeline background"
+        fill
+        className="object-cover z-0"
+        priority={false}
+      />
       <GoldenCornerSparkles className="z-0" />
 
       {/* Header */}

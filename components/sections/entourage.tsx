@@ -8,6 +8,7 @@ import { Loader2, Users } from "lucide-react"
 import { Cormorant_Garamond, Cinzel } from "next/font/google"
 import { CloudinaryImage } from "@/components/ui/cloudinary-image"
 import { GoldenCornerSparkles } from "@/components/decoration/golden-corner-sparkles"
+import Image from "next/image"
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
@@ -354,32 +355,15 @@ export function Entourage() {
   }
 
   return (
-    <div className="relative w-full" style={{ backgroundColor: 'var(--color-motif-cream)' }}>
-      {/* Full-bleed layered background — champagne + beige with soft movement */}
-      <div className="absolute inset-0 pointer-events-none" aria-hidden>
-        {/* Soft diagonal wash */}
-        <div
-          className="absolute inset-0 opacity-[0.26]"
-          style={{
-            background: 'linear-gradient(145deg, var(--color-motif-cream) 0%, color-mix(in srgb, var(--color-motif-silver) 14%, transparent) 35%, color-mix(in srgb, var(--color-motif-medium) 6%, transparent) 70%, color-mix(in srgb, var(--color-motif-deep) 3%, transparent) 100%)',
-          }}
-        />
-        {/* Gentle spotlight behind center card */}
-        <div
-          className="absolute inset-0 opacity-[0.16]"
-          style={{
-            background: 'radial-gradient(circle at 50% 15%, var(--color-motif-silver) 0%, transparent 58%)',
-          }}
-        />
-        {/* Vertical soft stripes for subtle texture */}
-        <div
-          className="absolute inset-0 opacity-[0.08]"
-          style={{
-            backgroundImage:
-              "repeating-linear-gradient(90deg, rgba(255,255,255,0.0) 0, rgba(255,255,255,0.0) 32px, rgba(255,255,255,0.24) 33px, rgba(255,255,255,0.24) 34px)",
-          }}
-        />
-      </div>
+    <div className="relative w-full">
+      {/* Background image */}
+      <Image
+        src="/Details/backgroundnew.png"
+        alt="Entourage background"
+        fill
+        className="object-cover z-0"
+        priority={false}
+      />
 
       <section
         ref={sectionRef}
@@ -451,162 +435,113 @@ export function Entourage() {
               </div>
             ) : (
             <>
+              {/* ── The Couple ── */}
+              {grouped["The Couple"] && grouped["The Couple"].length > 0 && (() => {
+                const members = grouped["The Couple"]
+                const groom = members.find(m => m.roleTitle?.toLowerCase().includes('groom'))
+                const bride = members.find(m => m.roleTitle?.toLowerCase().includes('bride'))
+                return (
+                  <div key="TheCouple">
+                    <TwoColumnLayout singleTitle="The Couple" centerContent={true}>
+                      <div className="px-1.5 sm:px-2 md:px-2.5">
+                        {groom && <NameItem member={groom} align="right" />}
+                      </div>
+                      <div className="px-1.5 sm:px-2 md:px-2.5">
+                        {bride && <NameItem member={bride} align="left" />}
+                      </div>
+                    </TwoColumnLayout>
+                  </div>
+                )
+              })()}
+
+              {/* ── Parents of the Bride & Groom — always rendered when data exists ── */}
+              {(() => {
+                const sortParents = (list: EntourageMember[]) =>
+                  [...list].sort((a, b) => {
+                    const aF = a.roleTitle?.toLowerCase().includes('father') ?? false
+                    const bF = b.roleTitle?.toLowerCase().includes('father') ?? false
+                    return aF === bF ? 0 : aF ? -1 : 1
+                  })
+                // Accept both singular ("Parent of the Bride") and plural ("Parents of the Bride")
+                const parentsBride = sortParents([
+                  ...(grouped["Parents of the Bride"] || []),
+                  ...(grouped["Parent of the Bride"] || []),
+                ])
+                const parentsGroom = sortParents([
+                  ...(grouped["Parents of the Groom"] || []),
+                  ...(grouped["Parent of the Groom"] || []),
+                ])
+                if (parentsBride.length === 0 && parentsGroom.length === 0) return null
+                return (
+                  <div key="Parents" className="mb-2 sm:mb-2.5 md:mb-3">
+                    <div className="flex justify-center py-2 sm:py-2.5 md:py-3 mb-1 sm:mb-1.5">
+                      <div className="w-full max-w-md h-px" style={{ background: 'linear-gradient(to right, transparent, color-mix(in srgb, var(--color-motif-medium) 31%, transparent), transparent)' }} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-x-3 sm:gap-x-4 md:gap-x-6 mb-1 sm:mb-1.5">
+                      <SectionTitle align="right" className="pr-1 sm:pr-1.5 md:pr-2">Parents of the Bride</SectionTitle>
+                      <SectionTitle align="left" className="pl-1 sm:pl-1.5 md:pl-2">Parents of the Groom</SectionTitle>
+                    </div>
+                    <div className="grid grid-cols-2 gap-x-3 sm:gap-x-4 md:gap-x-6">
+                      <div className="flex flex-col items-end px-1.5 sm:px-2 md:px-2.5">
+                        {parentsBride.map((m, i) => (
+                          <NameItem key={`bride-parent-${i}`} member={m} align="right" />
+                        ))}
+                      </div>
+                      <div className="flex flex-col items-start px-1.5 sm:px-2 md:px-2.5">
+                        {parentsGroom.map((m, i) => (
+                          <NameItem key={`groom-parent-${i}`} member={m} align="left" />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )
+              })()}
+
+              {/* ── Principal Sponsors — always rendered when data exists ── */}
+              {sponsors.length > 0 && (
+                <div key="PrincipalSponsors">
+                  <div className="flex justify-center py-2 sm:py-2.5 md:py-3 mb-2 sm:mb-2.5 md:mb-3">
+                    <div className="w-full max-w-md h-px" style={{ background: 'linear-gradient(to right, transparent, color-mix(in srgb, var(--color-motif-medium) 31%, transparent), transparent)' }} />
+                  </div>
+                  <TwoColumnLayout singleTitle="Principal Sponsors" centerContent={true}>
+                    {sponsors.map((sponsor, idx) => (
+                      <React.Fragment key={`sponsor-row-${idx}`}>
+                        <div className="px-1.5 sm:px-2 md:px-2.5">
+                          {sponsor.malePrincipalSponsor ? (
+                            <NameItem member={{ name: sponsor.malePrincipalSponsor, roleCategory: "", roleTitle: "", email: "" }} align="right" showRole={false} />
+                          ) : (
+                            <div className="py-0.5 sm:py-1 md:py-1.5" />
+                          )}
+                        </div>
+                        <div className="px-1.5 sm:px-2 md:px-2.5">
+                          {sponsor.femalePrincipalSponsor ? (
+                            <NameItem member={{ name: sponsor.femalePrincipalSponsor, roleCategory: "", roleTitle: "", email: "" }} align="left" showRole={false} />
+                          ) : (
+                            <div className="py-0.5 sm:py-1 md:py-1.5" />
+                          )}
+                        </div>
+                      </React.Fragment>
+                    ))}
+                  </TwoColumnLayout>
+                </div>
+              )}
+
+              {/* ── Rest of entourage ── */}
               {ROLE_CATEGORY_ORDER.map((category, categoryIndex) => {
                 const members = grouped[category] || []
-                
+
                 if (members.length === 0) return null
                 if (HIDDEN_ROLE_CATEGORIES.has(category)) return null
 
-                // Render OFFICIATING MINISTER directly above Principal Sponsors (in Parents block)
+                // Already rendered above as standalone blocks (singular + plural variants)
+                if (
+                  category === "The Couple" ||
+                  category === "Parents of the Bride" || category === "Parent of the Bride" ||
+                  category === "Parents of the Groom" || category === "Parent of the Groom"
+                ) return null
+
+                // OFFICIATING MINISTER rendered separately if needed
                 if (category === "OFFICIATING MINISTER" && hasParents) return null
-
-                // Special handling for The Couple - display Bride and Groom side by side
-                if (category === "The Couple") {
-                   const groom = members.find(m => m.roleTitle?.toLowerCase().includes('groom'))
-                  const bride = members.find(m => m.roleTitle?.toLowerCase().includes('bride'))
-                  
-                  return (
-                    <div key={category}>
-                      {categoryIndex > 0 && (
-                        <div className="flex justify-center py-2 sm:py-2.5 md:py-3 mb-2 sm:mb-2.5 md:mb-3">
-                          <div className="w-full max-w-md h-px" style={{ background: 'linear-gradient(to right, transparent, color-mix(in srgb, var(--color-motif-medium) 31%, transparent), transparent)' }}></div>
-                        </div>
-                      )}
-                      <TwoColumnLayout singleTitle="The Couple" centerContent={true}>
-                        <div className="px-1.5 sm:px-2 md:px-2.5">
-                          {groom && <NameItem member={groom} align="right" />}
-                        </div>
-                        <div className="px-1.5 sm:px-2 md:px-2.5">
-                          {bride && <NameItem member={bride} align="left" />}
-                        </div>
-                      </TwoColumnLayout>
-                    </div>
-                  )
-                }
-
-                // Special handling for Parents sections - combine into single two-column layout
-                if (category === "Parents of the Bride" || category === "Parents of the Groom") {
-                  // Get both parent groups
-                  const parentsBride = grouped["Parents of the Bride"] || []
-                  const parentsGroom = grouped["Parents of the Groom"] || []
-                  
-                  // Helper function to sort parents: father first, then mother
-                  const sortParents = (members: EntourageMember[]) => {
-                    return [...members].sort((a, b) => {
-                      const aIsFather = a.roleTitle?.toLowerCase().includes('father') ?? false
-                      const bIsFather = b.roleTitle?.toLowerCase().includes('father') ?? false
-                      
-                      // Father comes first
-                      if (aIsFather && !bIsFather) return -1
-                      if (!aIsFather && bIsFather) return 1
-                      return 0
-                    })
-                  }
-                  
-                  // Only render once (when processing "Parents of the Groom")
-                  if (category === "Parents of the Groom") {
-                    return (
-                      <div key="Parents">
-                        {categoryIndex > 0 && (
-                          <div className="flex justify-center py-2 sm:py-2.5 md:py-3 mb-2 sm:mb-2.5 md:mb-3">
-                            <div className="w-full max-w-md h-px" style={{ background: 'linear-gradient(to right, transparent, color-mix(in srgb, var(--color-motif-medium) 31%, transparent), transparent)' }}></div>
-                          </div>
-                        )}
-                        <TwoColumnLayout leftTitle="Groom’s Parents" rightTitle="Bride’s Parents">
-                          {(() => {
-                            const leftArr = sortParents(parentsGroom)
-                            const rightArr = sortParents(parentsBride)
-                            const maxLen = Math.max(leftArr.length, rightArr.length)
-                            const rows = []
-                            for (let i = 0; i < maxLen; i++) {
-                              const left = leftArr[i]
-                              const right = rightArr[i]
-                              rows.push(
-                                <React.Fragment key={`parents-row-${i}`}>
-                                  <div key={`parent-groom-${i}`} className="px-1.5 sm:px-2 md:px-2.5">
-                                    {left ? <NameItem member={left} align="right" /> : <div className="py-0.5" />}
-                                  </div>
-                                  <div key={`parent-bride-${i}`} className="px-1.5 sm:px-2 md:px-2.5">
-                                    {right ? <NameItem member={right} align="left" /> : <div className="py-0.5" />}
-                                  </div>
-                                </React.Fragment>
-                              )
-                            }
-                            return rows
-                          })()}
-                        </TwoColumnLayout>
-                        
-                        {/* Officiating Minister section - displayed above Principal Sponsors */}
-                        {(() => {
-                          const officiating = grouped["OFFICIATING MINISTER"] || []
-                          if (officiating.length === 0) return null
-                          return (
-                            <div key="OfficiatingMinisterBeforeSponsors" className="mt-4 sm:mt-5 md:mt-6">
-                              <TwoColumnLayout singleTitle="OFFICIATING MINISTER" centerContent={true}>
-                                {officiating.map((member, idx) => (
-                                  <div
-                                    key={`officiating-${idx}-${member.name}`}
-                                    className="px-1.5 sm:px-2 md:px-2.5 min-[350px]:col-span-2 flex justify-center"
-                                  >
-                                    <NameItem member={member} align="center" showRole={false} />
-                                  </div>
-                                ))}
-                              </TwoColumnLayout>
-                            </div>
-                          )
-                        })()}
-
-                        {/* Principal Sponsors section - displayed after Parents */}
-                        {sponsors.length > 0 && (
-                          <div key="SponsorsAfterParents">
-                            <div className="flex justify-center py-1.5 sm:py-2 md:py-2.5 mb-2 sm:mb-2.5 md:mb-3">
-                            </div>
-                            <TwoColumnLayout singleTitle="Principal Sponsors" centerContent={true}>
-                              {sponsors.map((sponsor, idx) => (
-                                <React.Fragment key={`sponsor-row-${idx}`}>
-                                  <div key={`sponsor-male-${idx}`} className="px-1.5 sm:px-2 md:px-2.5">
-                                    {sponsor.malePrincipalSponsor ? (
-                                      <NameItem 
-                                        member={{
-                                          name: sponsor.malePrincipalSponsor,
-                                          roleCategory: "",
-                                          roleTitle: "",
-                                          email: ""
-                                        }} 
-                                        align="right" 
-                                        showRole={false}
-                                      />
-                                    ) : (
-                                      <div className="py-0.5 sm:py-1 md:py-1.5" />
-                                    )}
-                                  </div>
-                                  <div key={`sponsor-female-${idx}`} className="px-1.5 sm:px-2 md:px-2.5">
-                                    {sponsor.femalePrincipalSponsor ? (
-                                      <NameItem 
-                                        member={{
-                                          name: sponsor.femalePrincipalSponsor,
-                                          roleCategory: "",
-                                          roleTitle: "",
-                                          email: ""
-                                        }} 
-                                        align="left" 
-                                        showRole={false}
-                                      />
-                                    ) : (
-                                      <div className="py-0.5 sm:py-1 md:py-1.5" />
-                                    )}
-                                  </div>
-                                </React.Fragment>
-                              ))}
-                            </TwoColumnLayout>
-                          </div>
-                        )}
-                      </div>
-                    )
-                  }
-                  // Skip rendering for "Parents of the Bride" since it's already rendered above
-                  return null
-                }
 
                 // Special handling for Family of the Groom/Bride - combine into single two-column layout
                 if (category === "Family of the Groom" || category === "Family of the Bride") {
@@ -664,7 +599,7 @@ export function Entourage() {
                             <div className="w-full max-w-md h-px" style={{ background: 'linear-gradient(to right, transparent, color-mix(in srgb, var(--color-motif-medium) 31%, transparent), transparent)' }}></div>
                           </div>
                         )}
-                        <TwoColumnLayout leftTitle="Best Men" rightTitle="Maid & Matron">
+                        <TwoColumnLayout leftTitle="Best Men" rightTitle="Maid of Honor">
                           {(() => {
                             const maxLen = Math.max(bestMan.length, maidOfHonor.length)
                             const rows = []
@@ -907,7 +842,13 @@ export function Entourage() {
               })}
               
               {/* Display any other categories not in the ordered list */}
-              {Object.keys(grouped).filter(cat => !ROLE_CATEGORY_ORDER.includes(cat) && cat !== "Other").map((category) => {
+              {Object.keys(grouped).filter(cat =>
+                !ROLE_CATEGORY_ORDER.includes(cat) &&
+                cat !== "Other" &&
+                cat !== "The Couple" &&
+                cat !== "Parent of the Bride" && cat !== "Parents of the Bride" &&
+                cat !== "Parent of the Groom" && cat !== "Parents of the Groom"
+              ).map((category) => {
                 const members = grouped[category]
                 return (
                   <div key={category}>

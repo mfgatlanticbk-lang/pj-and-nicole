@@ -117,20 +117,15 @@ export function Footer() {
   const groomNickname = siteConfig.couple.groomNickname
 
   return (
-    <div className="relative w-full" style={{ backgroundColor: palette.background }}>
-      {/* Full-bleed layered background — align with gallery/details */}
-      <div className="absolute inset-0 pointer-events-none" aria-hidden>
-        <div
-          className="absolute inset-0 opacity-[0.25]"
-          style={{
-            background: 'linear-gradient(165deg, var(--color-motif-cream) 0%, color-mix(in srgb, var(--color-motif-silver) 13%, transparent) 35%, color-mix(in srgb, var(--color-motif-medium) 6%, transparent) 70%, color-mix(in srgb, var(--color-motif-deep) 3%, transparent) 100%)',
-          }}
-        />
-        <div
-          className="absolute inset-0 opacity-[0.08]"
-          style={{ background: 'radial-gradient(ellipse 80% 50% at 50% 15%, var(--color-motif-silver) 0%, transparent 55%)' }}
-        />
-      </div>
+    <div className="relative w-full">
+      {/* Background image */}
+      <Image
+        src="/Details/backgroundnew.png"
+        alt="Footer background"
+        fill
+        className="object-cover z-0"
+        priority={false}
+      />
 
       <footer className="relative z-10 mt-12 sm:mt-16 overflow-hidden">
       <GoldenCornerSparkles className="z-0" />

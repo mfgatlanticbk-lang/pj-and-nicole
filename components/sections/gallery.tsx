@@ -131,15 +131,23 @@ export function Gallery() {
 
       <Section
         id="gallery"
-        className="relative z-10 py-16 sm:py-20 md:py-24 lg:py-28 overflow-hidden"
+        className="relative z-10 pt-10 pb-16 sm:pt-12 sm:pb-20 md:pt-14 md:pb-24 lg:pt-16 lg:pb-28 overflow-hidden"
       >
+      {/* Background image */}
+      <Image
+        src="/Details/backgroundnew.png"
+        alt="Gallery background"
+        fill
+        className="object-cover z-0"
+        priority={false}
+      />
       <GoldenCornerSparkles className="z-0" />
 
       {/* Header — wedding palette & copy */}
       <div className="relative z-10 text-center mb-12 sm:mb-16 md:mb-20 px-4 sm:px-6">
         <p
           className={`${cormorant.className} text-[0.7rem] sm:text-xs md:text-sm uppercase tracking-[0.28em] mb-2`}
-          style={{ color: 'var(--color-motif-medium)' }}
+          style={{ color: 'var(--color-motif-deep)', textShadow: '0 1px 4px rgba(255,255,255,0.7)' }}
         >
           Our Story in Frames
         </p>
@@ -149,13 +157,14 @@ export function Gallery() {
             fontSize: "clamp(2rem, 9vw, 4.5rem)",
             color: "var(--color-motif-deep)",
             letterSpacing: "0.01em",
+            textShadow: '0 2px 8px rgba(255,255,255,0.6)',
           }}
         >
           Gallery
         </h2>
         <p
           className={`${cormorant.className} text-xs sm:text-sm md:text-base font-light max-w-xl mx-auto leading-relaxed px-2 mb-3 sm:mb-4`}
-          style={{ color: 'var(--color-motif-medium)' }}
+          style={{ color: 'var(--color-motif-deep)', textShadow: '0 1px 6px rgba(255,255,255,0.65)' }}
         >
           From our first chapter to this beautiful season of commitment, every moment has been a testament to love, faith, and grace. We share these memories with heartfelt gratitude as we look forward to the lifetime that awaits us.
         </p>

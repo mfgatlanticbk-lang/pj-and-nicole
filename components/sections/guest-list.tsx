@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { Section } from "@/components/section"
+import Image from "next/image"
 import {
   Search,
   CheckCircle,
@@ -396,6 +397,14 @@ export function GuestList() {
 
   return (
     <Section id="guest-list" className="relative z-30 py-6 sm:py-10 md:py-12 lg:py-16">
+      {/* Background image */}
+      <Image
+        src="/Details/background.png"
+        alt="Guest list background"
+        fill
+        className="object-cover z-0"
+        priority={false}
+      />
       {/* Header */}
       <div className="relative z-10 text-center mb-4 sm:mb-6 md:mb-8 lg:mb-10 px-2 sm:px-3 md:px-4">
         {/* Small label */}

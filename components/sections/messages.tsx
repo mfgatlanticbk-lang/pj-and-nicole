@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast"
 import MessageWallDisplay from "./message-wall-display"
 import { Cormorant_Garamond, Cinzel } from "next/font/google"
 import { useSiteConfig } from "@/hooks/use-site-config"
+import Image from "next/image"
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
@@ -327,6 +328,14 @@ export function Messages() {
       id="messages"
       className="relative overflow-hidden"
     >
+      {/* Background image */}
+      <Image
+        src="/Details/background.png"
+        alt="Messages background"
+        fill
+        className="object-cover z-0"
+        priority={false}
+      />
       <GoldenCornerSparkles className="z-0" />
 
       <div className="relative z-10 max-w-6xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">

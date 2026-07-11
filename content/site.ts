@@ -6,9 +6,9 @@ import {
 export const siteConfig = {
   couple: {
     bride: "Teri Nicole A. Guillermo", //Noenyl Bryle M. Gonzaga
-    brideNickname: "Nicole", //Ltryl
+    brideNickname: "PJ", //PJ
     groom: "Patrick James G. Javar", //Ltryl B. Benitez
-    groomNickname: "PJ",
+    groomNickname: "Nicole",
     monogram:"/monogram/monogram.png" ,//Ltryl
     backgroundMusic:"/background_music/PALAGI (Wedding Version) - TJ Monterde  OFFICIAL AUDIO.mp3"
   },
@@ -55,13 +55,13 @@ export const siteConfig = {
     id: "BPI",
     src: "/monogram/BPI.png",
     label: "BPI",
-    accountNumber: "TE*I NI***E A GU******O",
+    accountNumber: "Teri Nicole Guillermo : 3519080248",
     },
     QR_2:{
     id: "Zelle",
     src: "/monogram/Zelle.png",
     label: "Zelle",
-    accountNumber: "Patrick: xxx-xxx-0009",
+    accountNumber: "Patrick James Javar : 914-770-0009",
     }
   },
   ceremony: {
@@ -70,9 +70,9 @@ export const siteConfig = {
     map: "https://maps.app.goo.gl/c7jCXMkPfqfU2txe6",
     date: "November 7, 2026",
     day: "Saturday",
-    time: "3:00 PM",
-    entourageTime: "2:00 PM",
-    guestsTime: "2:30 PM",
+    time: "2:00 PM",
+    entourageTime: "1:00 PM",
+    guestsTime: "1:30 PM",
     image: "/Details/ceremony_1.webp",
   },
   reception: {
@@ -81,7 +81,7 @@ export const siteConfig = {
     map: "https://maps.app.goo.gl/13V2x6vJxYe5q3W16",
     date: "November 7, 2026",
     day: "Saturday",
-    time: "5:30 PM",
+    time: "5:15 PM",
     image: ["/Details/recepton_1.webp","/Details/reception_2.webp"],
   },
   dressCode: {
@@ -91,22 +91,22 @@ export const siteConfig = {
       male: "Guests are kindly requested to wear attire in any of the shades within our wedding palette.Color pallet and image to be followed. STRICTLY no shorts, maong jeans, t-shirts, or slippers.",
       female: "Guests are kindly requested to wear attire in any of the shades within our wedding palette.Color pallet and image to be followed. STRICTLY no shorts, maong jeans, t-shirts, or slippers.",
       notes: "Your Presence will make our day even more special \n Ninong: Formal Wear : Charcoal Gray suid and Slacks, white long sleeves, and burgundy neckite \n Ninang: Long Dress / Formal Dress Burgundy Long Formal Dress.",
-      photo: "/Details/sponsors.png",
-      palette: "#E2E5ED, #CED2D8, #B5C1D6,#95A6C7,#8191AC"
+      photo: "/Details/principal sponsors (2).png",
+      palette: "#C8CBCF, #9DA3AD, #737982, #474D5A, #B2B8C5"
     },
     entourage: {
-      gents: "Guests are kindly requested to wear attire in any of the shades within our wedding palette.Color pallet and image to be followed. STRICTLY no shorts, maong jeans, t-shirts, or slippers.",
-      ladies: "Guests are kindly requested to wear attire in any of the shades within our wedding palette.Color pallet and image to be followed. STRICTLY no shorts, maong jeans, t-shirts, or slippers.",
-      notes: "Your Presence will make our day even more special \n Ninong: Formal Wear : Charcoal Gray suid and Slacks, white long sleeves, and burgundy neckite \n Ninang: Long Dress / Formal Dress Burgundy Long Formal Dress.",
-      photo: "/Details/sponsors.png",
-      palette: "#E2E5ED, #CED2D8, #B5C1D6,#95A6C7,#8191AC",
+      gents: "Dusty blue suit with blue necktie",
+      ladies: "Dusty blue formal gown",
+      notes: "Dressed in the color of unity — dusty blue.",
+      photo: "/Details/secondary sponsors (2).png",
+      palette: "#A0BFDA, #8AAECC, #7B9EC6, #6B8DB5, #5B7EA4",
     },
     guests: {
-      gents: "Guests are kindly requested to wear attire in any of the shades within our wedding palette.Color pallet and image to be followed. STRICTLY no shorts, maong jeans, t-shirts, or slippers.",
-      ladies: "Guests are kindly requested to wear attire in any of the shades within our wedding palette.Color pallet and image to be followed. STRICTLY no shorts, maong jeans, t-shirts, or slippers.",
-      notes: "WE KINDLY ASK OUR GUEST TO WEAR THESE COLORS \n Gentlemen : Long sleeves / suit and slacks \n Ladies : Long Dress / Formal Dress",
-      photo: "/Details/guest.png",
-      palette: "#E2E5ED, #CED2D8, #B5C1D6,#95A6C7,#8191AC",
+      gents: "Dusty blue long sleeve with gray or black slacks",
+      ladies: "Dusty blue gown, midi dress, or cocktail dress",
+      notes: "We kindly ask our guests to wear the colors shown above.",
+      photo: "/Details/guest (6).png",
+      palette: "#A0BFDA, #7B9EC6, #6B8DB5, #8EA7C4, #5B7EA4",
     },
     note: "We kindly request our guests to dress in attire following our wedding palette."
   },

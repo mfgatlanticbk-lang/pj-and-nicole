@@ -4,6 +4,7 @@ import { Section } from "@/components/section"
 import { GoldenCornerSparkles } from "@/components/decoration/golden-corner-sparkles"
 import { useSiteConfig } from "@/hooks/use-site-config"
 import { Cormorant_Garamond, Cinzel } from "next/font/google"
+import Image from "next/image"
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
@@ -24,6 +25,14 @@ export function Welcome() {
       id="welcome"
       className="relative overflow-hidden bg-transparent py-12 sm:py-16 md:py-20"
     >
+      {/* Background image */}
+      <Image
+        src="/Details/background.png"
+        alt="Welcome background"
+        fill
+        className="object-cover z-0"
+        priority={false}
+      />
       <GoldenCornerSparkles className="z-0" />
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 md:px-8">

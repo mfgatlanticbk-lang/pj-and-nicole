@@ -4,6 +4,7 @@ import { ExternalLink, Video } from "lucide-react"
 import { Section } from "@/components/section"
 import { GoldenCornerSparkles } from "@/components/decoration/golden-corner-sparkles"
 import { Cormorant_Garamond, Cinzel } from "next/font/google"
+import Image from "next/image"
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
@@ -24,6 +25,14 @@ export function VideoMessage() {
       id="video-message"
       className="relative overflow-hidden bg-transparent py-12 sm:py-16 md:py-20"
     >
+      {/* Background image */}
+      <Image
+        src="/Details/background.png"
+        alt="Video message background"
+        fill
+        className="object-cover z-0"
+        priority={false}
+      />
       <GoldenCornerSparkles className="z-0" />
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 md:px-8">
@@ -79,23 +88,18 @@ export function VideoMessage() {
               className={`${cormorant.className} text-[0.75rem] sm:text-[0.85rem] md:text-sm lg:text-base leading-relaxed sm:leading-6 md:leading-7 space-y-2.5 sm:space-y-3 md:space-y-4`}
               style={{ color: "var(--color-motif-deep)" }}
             >
-              <p>
-                As we step into this new chapter, guided by Jehovah&apos;s loving hands,
-                we give heartfelt thanks for the people He has placed along our journey.
-              </p>
-              <p className="italic">
-                Indeed, you are a cherished treasure, a blessing we hold dear.
-              </p>
-              <p>
-                It would mean so much to us if you could send a video message—something
-                we can treasure and revisit through the years, even as our black hair
-                gradually turns white with time.
-              </p>
-              <p>
-                Your message will surely make our wedding day—and even our married
-                life—more special and full of warmth. Thank you for being part of our
-                lives and for your love and support. We love you!
-              </p>
+            <p>
+            As we begin our married life, we’d love to hear from you. Please share a short video message with your blessings, advice, or well wishes.
+</p>
+
+<p className="italic">
+Your words will become a treasured keepsake that we will revisit for years to come.
+</p>
+
+
+<p>
+Thank you for being part of our journey.
+</p>
             </div>
 
             {/* Second divider */}

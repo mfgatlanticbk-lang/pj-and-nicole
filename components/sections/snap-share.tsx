@@ -141,6 +141,14 @@ export function SnapShare() {
       id="snap-share"
       className="relative overflow-hidden py-12 sm:py-16 md:py-20 lg:py-24"
     >
+      {/* Background image */}
+      <Image
+        src="/Details/background.png"
+        alt="Snap & share background"
+        fill
+        className="object-cover z-0"
+        priority={false}
+      />
       <GoldenCornerSparkles className="z-0" />
 
       <div className="relative max-w-6xl mx-auto px-3 sm:px-6 md:px-8">
@@ -196,14 +204,14 @@ export function SnapShare() {
                     whileHover={{ scale: 1.03 }}
                     transition={{ duration: 0.25 }}
                   >
-                    <Image src="/mobile-background/couples (49).webp" alt="Wedding moment 1" fill className="object-cover" style={{ imageOrientation: "from-image" }} />
+                    <Image src="/mobile-background/couples (63).webp" alt="Wedding moment 1" fill className="object-cover" style={{ imageOrientation: "from-image" }} />
                   </motion.div>
                   <motion.div
                     className="relative aspect-square rounded-lg sm:rounded-xl overflow-hidden shadow-md border-2 border-motif-medium/30 hover:border-motif-medium/50 transition-all"
                     whileHover={{ scale: 1.03 }}
                     transition={{ duration: 0.25 }}
                   >
-                    <Image src="/mobile-background/couples (51).webp" alt="Wedding moment 2" fill className="object-cover" style={{ imageOrientation: "from-image" }} />
+                    <Image src="/mobile-background/couples (50).webp" alt="Wedding moment 2" fill className="object-cover" style={{ imageOrientation: "from-image" }} />
                   </motion.div>
                   <motion.div
                     className="relative col-span-2 aspect-[3/2] rounded-lg sm:rounded-xl overflow-hidden shadow-md border-2 border-motif-medium/30 hover:border-motif-medium/50 transition-all"
