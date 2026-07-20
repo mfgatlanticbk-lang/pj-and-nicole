@@ -88,9 +88,9 @@ export default function Home() {
               {/* Spacer so content starts below fixed navbar (h-12 sm:h-14 md:h-16) */}
               {appState === AppState.DETAILS && <div className="h-12 sm:h-14 md:h-16" aria-hidden />}
               <MainHero />
-              <WeddingPlaylist />
+   
               <Welcome />
-              
+              <WeddingPlaylist />
                {/* <CoupleVideo />  */}
               <LoveStory />
 

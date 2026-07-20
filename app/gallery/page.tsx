@@ -19,13 +19,16 @@ export const revalidate = 3600
 export default async function GalleryPage() {
   const siteConfig = await getSiteConfig()
   const allImages = await fetchGalleryImages()
-  const images = allImages.map((src) => ({
-    src,
-    category: "gallery" as const,
-    width: 1200,
-    height: 900,
-    orientation: "landscape" as const,
-  }))
+  const images = allImages.map((src) => {
+    const isDesktop = src.includes("/desktop-background/")
+    return {
+      src,
+      category: isDesktop ? ("desktop" as const) : ("mobile" as const),
+      width: isDesktop ? 1600 : 900,
+      height: isDesktop ? 1200 : 1200,
+      orientation: isDesktop ? ("landscape" as const) : ("portrait" as const),
+    }
+  })
 
   return (
     <main className="min-h-screen relative overflow-hidden bg-motif-cream">
@@ -81,13 +84,13 @@ export default async function GalleryPage() {
         {images.length === 0 ? (
           <div className={`${cormorant.className} text-center text-motif-medium`}>
             <p className="font-light">
-              No images found. Upload photos to your Cloudinary{" "}
+              No images found. Add photos to{" "}
               <code className="px-2 py-1 rounded border bg-motif-accent/10 border-motif-accent/40 text-motif-deep">
-                gallery
+                public/mobile-background
               </code>
-              {" "}folder or add paths to{" "}
+              {" "}or{" "}
               <code className="px-2 py-1 rounded border bg-motif-accent/10 border-motif-accent/40 text-motif-deep">
-                content/gallery-images.ts
+                public/desktop-background
               </code>
               .
             </p>

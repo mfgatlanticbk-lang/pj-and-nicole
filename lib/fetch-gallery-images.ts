@@ -1,7 +1,11 @@
+import { readdir } from "fs/promises"
+import { join } from "path"
 import { PROJECT_PREFIX } from "@/lib/cloudinary"
 import { galleryFallbackImages } from "@/content/gallery-images"
 
-const GALLERY_FOLDERS = ["gallery", "desktop-background"] as const
+const GALLERY_FOLDERS = ["mobile-background", "desktop-background"] as const
+
+const IMAGE_EXTENSIONS = /\.(webp|jpe?g|png|gif|avif)$/i
 
 function publicIdToLocalPath(publicId: string): string {
   const relative = publicId.startsWith(`${PROJECT_PREFIX}/`)
@@ -11,12 +15,34 @@ function publicIdToLocalPath(publicId: string): string {
   return `/${relative}.webp`
 }
 
-function sortByNumericSuffix(paths: string[]): string[] {
+function sortGalleryImages(paths: string[]): string[] {
+  const folderOrder = new Map(GALLERY_FOLDERS.map((folder, index) => [folder, index]))
+
   return [...paths].sort((a, b) => {
+    const folderA = a.split("/")[1] ?? ""
+    const folderB = b.split("/")[1] ?? ""
+    const orderA = folderOrder.get(folderA as (typeof GALLERY_FOLDERS)[number]) ?? 99
+    const orderB = folderOrder.get(folderB as (typeof GALLERY_FOLDERS)[number]) ?? 99
+
+    if (orderA !== orderB) {
+      return orderA - orderB
+    }
+
     const numA = parseInt(a.match(/\((\d+)\)/)?.[1] || "0", 10)
     const numB = parseInt(b.match(/\((\d+)\)/)?.[1] || "0", 10)
     return numA - numB
   })
+}
+
+async function listLocalFolder(folder: string): Promise<string[]> {
+  try {
+    const files = await readdir(join(process.cwd(), "public", folder))
+    return files
+      .filter((file) => IMAGE_EXTENSIONS.test(file))
+      .map((file) => `/${folder}/${file}`)
+  } catch {
+    return []
+  }
 }
 
 async function listCloudinaryFolder(folder: string): Promise<string[]> {
@@ -69,14 +95,29 @@ async function listCloudinaryFolder(folder: string): Promise<string[]> {
   return images
 }
 
-/** Loads gallery images from Cloudinary (no local filesystem reads). */
-export async function fetchGalleryImages(): Promise<string[]> {
+async function listGalleryFolders(
+  listFolder: (folder: string) => Promise<string[]>
+): Promise<string[]> {
+  const images: string[] = []
+
   for (const folder of GALLERY_FOLDERS) {
-    const images = sortByNumericSuffix(await listCloudinaryFolder(folder))
-    if (images.length > 0) {
-      return images
-    }
+    images.push(...(await listFolder(folder)))
   }
 
-  return sortByNumericSuffix(galleryFallbackImages)
+  return sortGalleryImages(images)
+}
+
+/** Loads gallery images from Cloudinary, then local public folders as fallback. */
+export async function fetchGalleryImages(): Promise<string[]> {
+  const cloudinaryImages = await listGalleryFolders(listCloudinaryFolder)
+  if (cloudinaryImages.length > 0) {
+    return cloudinaryImages
+  }
+
+  const localImages = await listGalleryFolders(listLocalFolder)
+  if (localImages.length > 0) {
+    return localImages
+  }
+
+  return sortGalleryImages(galleryFallbackImages)
 }
