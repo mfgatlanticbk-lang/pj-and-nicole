@@ -32,8 +32,15 @@ const galleryItems = [
   { image: "/mobile-background/couples (51).webp", text: " " },
   { image: "/mobile-background/couples (52).webp", text: " " },
   { image: "/mobile-background/couples (54).webp", text: " " },
-  
-
+  { image: "/mobile-background/couples (55).webp", text: " " },
+  { image: "/mobile-background/couples (56).webp", text: " " },
+  { image: "/mobile-background/couples (57).webp", text: " " },
+  { image: "/mobile-background/couples (58).webp", text: " " },
+  { image: "/mobile-background/couples (59).webp", text: " " },
+  { image: "/mobile-background/couples (60).webp", text: " " },
+  { image: "/mobile-background/couples (61).webp", text: " " },
+  { image: "/mobile-background/couples (62).webp", text: " " },
+  { image: "/mobile-background/couples (63).webp", text: " " },
 ]
 
 export function Gallery() {
