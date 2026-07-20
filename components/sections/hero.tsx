@@ -1,109 +1,42 @@
 "use client"
 
-import { useEffect, useState, useMemo, type CSSProperties } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { motion } from "motion/react"
-import { Cinzel } from "next/font/google"
-import localFont from "next/font/local"
+import { Cormorant_Garamond, Cinzel } from "next/font/google"
 import { useSiteConfig } from "@/hooks/use-site-config"
-import { parseWeddingDate } from "@/lib/wedding-date"
+import { GoldenCornerSparkles } from "@/components/decoration/golden-corner-sparkles"
 import Image from "next/image"
 
 const desktopBackgroundSrcs: readonly string[] = [
-  '/desktop-background/couple (1).webp',
-  '/desktop-background/couple (2).webp',
-  '/desktop-background/couple (3).webp',
-  '/desktop-background/couple (4).webp',
-  '/desktop-background/couple (5).webp',
+  '/desktop_slide/couple 1.jpg',
+  '/desktop_slide/couple 2.jpg',
+  '/desktop_slide/couple 3.jpg',
+  '/desktop_slide/couple 4.jpg',
+  '/desktop_slide/couple 5.jpg',
+  '/desktop_slide/couple 6.jpg',
+  '/desktop_slide/couple 7.jpg',
 ]
 
 const mobileBackgroundSrcs: readonly string[] = [
 '/mobile-background/couples (61).webp',
-'/mobile-background/couples (63).webp',
-'/mobile-background/couples (60).webp',
-'/mobile-background/couples (56).webp',
 ]
 
 const SHOW_BUTTERFLIES = false
 
-const HERO_TEXT = "var(--color-motif-cream)"
-const HERO_TEXT_MUTED = "rgba(255, 246, 233, 0.9)"
-const HERO_TITLE_SHADOW = "0 2px 10px rgba(0, 0, 0, 0.65)"
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+})
 
 const cinzel = Cinzel({
   subsets: ["latin"],
-  weight: ["400", "600", "700"],
+  weight: "700",
 })
 
-const theSeasons = localFont({
-  src: "../../Font/Demo_Fonts/Fontspring-DEMO-theseasons-reg.otf",
-  display: "swap",
-  variable: "--font-the-seasons",
+const cinzelRegular = Cinzel({
+  subsets: ["latin"],
+  weight: "400",
 })
-
-const aboveTheBeyond = localFont({
-  src: "../../Font/playlist-script/Playlist Script.otf",
-  display: "swap",
-  variable: "--font-above-beyond",
-})
-
-const heroDividerLineStyle: CSSProperties = {
-  background:
-    "linear-gradient(to right, transparent, rgba(255, 246, 233, 0.45), transparent)",
-}
-
-function HeroDivider() {
-  return (
-    <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-      <span className="h-px w-6 sm:w-10 md:w-12" style={heroDividerLineStyle} />
-      <span className="h-0.5 w-0.5 rounded-full bg-motif-cream/50 sm:h-1 sm:w-1" aria-hidden />
-      <span
-        className="h-px w-6 sm:w-10 md:w-12"
-        style={{
-          background:
-            "linear-gradient(to left, transparent, rgba(255, 246, 233, 0.45), transparent)",
-        }}
-      />
-    </div>
-  )
-}
-
-function HeroCoupleLabel({ groom, bride }: { groom: string; bride: string }) {
-  const lineStyle: CSSProperties = {
-    background: "linear-gradient(to right, transparent, rgba(255, 246, 233, 0.4))",
-  }
-
-  return (
-    <div className="flex items-center justify-center gap-2.5 sm:gap-3.5">
-      <span className="h-px w-5 sm:w-7 md:w-9" style={lineStyle} aria-hidden />
-      <p
-        className={`${cinzel.className} shrink-0 py-0.5 text-[0.525rem] font-semibold uppercase leading-normal tracking-[0.34em] min-[400px]:text-[0.55rem] min-[400px]:tracking-[0.38em] sm:text-[0.575rem] sm:tracking-[0.44em]`}
-        style={{ color: HERO_TEXT, textShadow: HERO_TITLE_SHADOW }}
-      >
-        {groom}
-        <span
-          className={`${aboveTheBeyond.className} mx-1.5 inline-block normal-case tracking-normal sm:mx-2`}
-          style={{
-            fontSize: "1.35em",
-            color: "var(--color-welcome-green)",
-            verticalAlign: "middle",
-          }}
-          aria-hidden
-        >
-          &
-        </span>
-        {bride}
-      </p>
-      <span
-        className="h-px w-5 sm:w-7 md:w-9"
-        style={{
-          background:
-            "linear-gradient(to left, transparent, rgba(255, 246, 233, 0.4))",
-        }}
-        aria-hidden
-      />
-    </div>
-  )
-}
 
 export function Hero() {
   const siteConfig = useSiteConfig()
@@ -172,26 +105,18 @@ export function Hero() {
     }
   }, [imagesLoaded])
 
+  const [weddingMonth = "June", weddingDayRaw = "7", weddingYear = "2026"] =
+    siteConfig.wedding.date.split(" ")
+  const weddingDayNumber = weddingDayRaw.replace(/[^0-9]/g, "") || "7"
+  const ceremonyTime = siteConfig.wedding.time
   const groomName = siteConfig.couple.groomNickname || siteConfig.couple.groom
   const brideName = siteConfig.couple.brideNickname || siteConfig.couple.bride
-
-  const parsedDate = useMemo(
-    () => parseWeddingDate(siteConfig.ceremony.date ?? siteConfig.wedding.date),
-    [siteConfig.ceremony.date, siteConfig.wedding.date],
-  )
-  const weddingMonth = parsedDate.month
-  const weddingDayNumber = parsedDate.day
-  const weddingYear = parsedDate.year
-  const ceremonyDayShort = (
-    siteConfig.ceremony.day ?? parsedDate.dayOfWeek
-  ).slice(0, 3).toUpperCase()
-  const ceremonyTime = siteConfig.ceremony.time ?? siteConfig.wedding.time
+  const ceremonyDayShort = siteConfig.ceremony.day
+    ? siteConfig.ceremony.day.slice(0, 3).toUpperCase()
+    : "THU"
 
   return (
-    <section
-      id="home"
-      className={`${theSeasons.variable} ${aboveTheBeyond.variable} relative min-h-screen flex items-center justify-center overflow-hidden bg-motif-deep`}
-    >
+    <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-motif-deep">
       <div className="absolute inset-0 w-full h-full">
         {imagesLoaded &&
           backgroundImages.map((src, index) => (
@@ -218,6 +143,8 @@ export function Hero() {
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent z-0" />
         <div className="absolute inset-x-0 top-0 h-52 bg-gradient-to-b from-black/50 to-transparent z-0" />
       </div>
+
+      <GoldenCornerSparkles className="z-0" />
 
       {SHOW_BUTTERFLIES && (
         <>
@@ -536,49 +463,48 @@ export function Hero() {
         </>
       )}
 
-      <div className="relative z-10 w-full container mx-auto px-5 sm:px-8 md:px-12 lg:px-16 flex flex-col items-center justify-center min-h-screen pt-14 sm:pt-16 pb-12 sm:pb-16">
+      <div className="relative z-10 w-full container mx-auto px-5 sm:px-8 md:px-12 lg:px-16 flex flex-col items-center justify-center min-h-screen pt-20 sm:pt-24 pb-12 sm:pb-16">
         <div
-          className={`w-full max-w-4xl flex flex-col items-center gap-3 sm:gap-4 md:gap-5 transition-all duration-1000 ease-out ${
+          className={`w-full max-w-4xl flex flex-col items-center gap-5 sm:gap-7 md:gap-9 transition-all duration-1000 ease-out ${
             isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
           }`}
         >
-          <div className="w-full space-y-1.5 sm:space-y-2 -mt-1 sm:-mt-2">
-            <HeroDivider />
+          {/* Tagline */}
+          <p
+            className={`${cormorant.className} text-[0.7rem] sm:text-xs md:text-sm lg:text-base tracking-[0.28em] sm:tracking-[0.32em] uppercase font-medium text-center text-motif-cream/90`}
+            style={{ textShadow: "0 2px 10px rgba(0,0,0,0.65)" }}
+          >
+            Together with our families,
+            <br />
+            we joyfully invite you to witness our union.
+          </p>
 
-            {/* Tagline */}
-            <p
-              className="font-goudy-italic text-sm sm:text-base md:text-lg lg:text-xl leading-snug sm:leading-relaxed text-center max-w-lg mx-auto"
-              style={{ color: HERO_TEXT_MUTED, textShadow: HERO_TITLE_SHADOW }}
-            >
-              Together with our families, we joyfully invite you to witness our union.
-            </p>
-          </div>
-
-
-          {/* Couple Names — script PNG tinted to motif cream */}
+          {/* Couple Names */}
           <div
-            role="img"
-            aria-label={`${brideName} and ${groomName}`}
-            className="w-full max-w-[min(90vw,22rem)] sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl aspect-[528/473] mx-auto drop-shadow-2xl"
+            className="w-full flex flex-col leading-none"
             style={{
-              backgroundColor: "var(--color-motif-cream)",
-              WebkitMaskImage: "url(/Details/couplesname.png)",
-              maskImage: "url(/Details/couplesname.png)",
-              WebkitMaskSize: "contain",
-              maskSize: "contain",
-              WebkitMaskRepeat: "no-repeat",
-              maskRepeat: "no-repeat",
-              WebkitMaskPosition: "center",
-              maskPosition: "center",
-              filter: "drop-shadow(0 2px 28px rgba(0,0,0,0.75))",
+              fontFamily: 'var(--font-playlist-script)',
+              color: 'var(--color-motif-cream)',
+              textShadow: "0 2px 28px rgba(0,0,0,0.75)",
+              fontWeight: 400,
             }}
-          />
+          >
+            <span className="block text-left text-7xl sm:text-8xl md:text-9xl lg:text-[10rem] xl:text-[12rem] drop-shadow-2xl">
+              {siteConfig.couple.brideNickname}
+            </span>
+            <span className="block text-center text-3xl sm:text-4xl md:text-5xl lg:text-6xl py-1 sm:py-2 opacity-80">
+              +
+            </span>
+            <span className="block text-right text-7xl sm:text-8xl md:text-9xl lg:text-[10rem] xl:text-[12rem] drop-shadow-2xl">
+              {siteConfig.couple.groomNickname}
+            </span>
+          </div>
 
           {/* Date & Time block */}
           <div className="w-full max-w-2xl mx-auto">
             <div
-              className="flex flex-col items-center gap-1.5 sm:gap-2.5 md:gap-3"
-              style={{ color: HERO_TEXT_MUTED, textShadow: "0 4px 16px rgba(0,0,0,0.6)" }}
+              className={`${cormorant.className} flex flex-col items-center gap-1.5 sm:gap-2.5 md:gap-3 text-motif-cream/95`}
+              style={{ textShadow: "0 4px 16px rgba(0,0,0,0.6)" }}
             >
               <span
                 className={`${cinzel.className} text-[0.65rem] sm:text-xs md:text-sm uppercase tracking-[0.4em] sm:tracking-[0.5em] font-light text-motif-cream`}
@@ -647,48 +573,39 @@ export function Hero() {
             {siteConfig.ceremony.location}
           </p>
 
-          <div className="w-full pt-1 sm:pt-2">
-            <HeroDivider />
-          </div>
-
           {/* Call-to-action section */}
           <div className="flex flex-col gap-3 sm:gap-4 items-center max-w-2xl mx-auto w-full px-4">
             <p
-              className="font-goudy-italic text-sm sm:text-base md:text-lg leading-relaxed text-center px-2"
-              style={{ color: HERO_TEXT_MUTED, textShadow: HERO_TITLE_SHADOW }}
+              className={`${cinzel.className} text-[0.7rem] sm:text-xs md:text-sm lg:text-base uppercase tracking-[0.24em] sm:tracking-[0.28em] text-motif-cream/95 font-normal leading-relaxed text-center px-4`}
+              style={{
+                textShadow: "0 2px 14px rgba(0,0,0,0.7)",
+              }}
             >
               Your presence, prayers, and love will mean the world to us.
             </p>
 
+            {/* Call-to-action buttons */}
             <div className="w-full flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-stretch">
-              <a
-                href="#guest-list"
-                className={`${cinzel.className} group relative flex-1 sm:min-w-[200px] md:min-w-[220px] rounded-sm border overflow-hidden transition-all duration-300 hover:-translate-y-0.5 focus-visible:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2`}
-                style={{
-                  backgroundColor: "var(--color-motif-cream)",
-                  borderColor: "color-mix(in srgb, var(--color-motif-cream) 60%, transparent)",
-                  color: "var(--color-motif-deep)",
-                  boxShadow:
-                    "0 10px 24px color-mix(in srgb, var(--color-motif-deep) 40%, transparent)",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "var(--color-motif-deep)"
-                  e.currentTarget.style.borderColor = "var(--color-motif-cream)"
-                  e.currentTarget.style.color = "var(--color-motif-cream)"
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "var(--color-motif-cream)"
-                  e.currentTarget.style.borderColor =
-                    "color-mix(in srgb, var(--color-motif-cream) 60%, transparent)"
-                  e.currentTarget.style.color = "var(--color-motif-deep)"
-                }}
-              >
-                <span
-                  className="relative z-10 inline-flex h-full min-h-[3rem] sm:min-h-[3.25rem] w-full items-center justify-center px-6 sm:px-8 text-[0.625rem] sm:text-[0.6875rem] md:text-xs font-semibold uppercase tracking-[0.24em] sm:tracking-[0.28em] md:tracking-[0.32em]"
-                >
-                  Confirm Attendance
-                </span>
-              </a>
+            <a
+              href="#guest-list"
+              className={`${cormorant.className} group relative flex-1 sm:min-w-[200px] md:min-w-[220px] rounded-lg overflow-hidden transition-all duration-300 hover:-translate-y-1 focus-visible:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-motif-deep/70`}
+              style={{
+                backgroundColor: "var(--color-motif-cream)",
+                boxShadow: "0 10px 24px color-mix(in srgb, var(--color-motif-cream) 40%, transparent)",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--color-motif-cream) 75%, var(--color-motif-medium))";
+                e.currentTarget.style.boxShadow = "0 12px 28px color-mix(in srgb, var(--color-motif-cream) 50%, transparent)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "var(--color-motif-cream)";
+                e.currentTarget.style.boxShadow = "0 10px 24px color-mix(in srgb, var(--color-motif-cream) 40%, transparent)";
+              }}
+            >
+              <span className="relative z-10 inline-flex h-full min-h-[3rem] sm:min-h-[3.25rem] w-full items-center justify-center px-6 sm:px-8 text-[0.65rem] sm:text-[0.7rem] md:text-xs uppercase tracking-[0.32em] sm:tracking-[0.36em] text-motif-deep font-semibold transition-all duration-300" style={{ textShadow: "0 1px 6px rgba(0,0,0,0.1)" }}>
+                Confirm Attendance
+              </span>
+            </a>
             </div>
           </div>
         </div>

@@ -66,7 +66,7 @@ function buildTimelineEvents(siteConfig: SiteConfig): TimelineEvent[] {
     imageSrc: "/weddingtimeline/PhotoSession.png",
   },
   {
-    time: `5:30 PM`,
+    time: `4:00 PM`,
     title: "Cocktail Hour",
     location: receptionVenue,
     icon: CocktailIcon,
