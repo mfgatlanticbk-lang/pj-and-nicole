@@ -1,7 +1,7 @@
 "use client"
 
+import Image from "next/image"
 import { useEffect, useMemo, useRef, useState } from "react"
-import { CloudinaryImage } from "@/components/ui/cloudinary-image"
 
 type ImageItem = {
   src: string
@@ -72,7 +72,7 @@ export default function MasonryGallery({ images }: { images: ImageItem[] }) {
                 <div className={`${getCardAspect(img)} w-full animate-pulse bg-gradient-to-br from-[#606C60]/30 via-[#E1D5C7]/25 to-[#606C60]/30`} />
               )}
               <div className={`relative w-full ${getCardAspect(img)}`}>
-                <CloudinaryImage
+                <Image
                   src={img.src}
                   alt=""
                   fill
@@ -107,7 +107,7 @@ export default function MasonryGallery({ images }: { images: ImageItem[] }) {
               ‹
             </button>
             <div className="relative max-h-[80vh] w-auto">
-              <CloudinaryImage
+              <Image
                 src={filtered[lightboxIdx].src}
                 alt=""
                 width={filtered[lightboxIdx].width}

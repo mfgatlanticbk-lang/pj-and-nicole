@@ -1,7 +1,7 @@
 const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
 export const PROJECT_PREFIX =
   process.env.NEXT_PUBLIC_CLOUDINARY_PROJECT_PREFIX ??
-  "wedding-projects/ken-and-ely"
+  "wedding-projects/pj-and-nicole"
 
 /**
  * Converts a local public path to a Cloudinary public ID, scoped to this
@@ -34,9 +34,11 @@ export function cloudinaryLoader({
   width: number
   quality?: number
 }): string {
+  if (!CLOUD_NAME) return src
+
   const publicId = toPublicId(src)
   const q = quality ?? "auto"
-  return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/f_auto,q_${q},w_${width}/${publicId}`
+  return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/f_auto,q_${q},w_${width}/${encodeURI(publicId)}`
 }
 
 interface CloudinaryUrlOptions {

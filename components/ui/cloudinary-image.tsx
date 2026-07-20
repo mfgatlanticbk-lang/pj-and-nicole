@@ -11,10 +11,12 @@ import { useState } from "react"
  * Falls back to the original local /public path if the Cloudinary URL fails (e.g. image
  * not yet uploaded), so the site never shows broken images during the migration.
  */
+const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+
 export function CloudinaryImage({ src, ...props }: ImageProps) {
   const [useFallback, setUseFallback] = useState(false)
 
-  if (useFallback) {
+  if (!CLOUD_NAME || useFallback) {
     // eslint-disable-next-line jsx-a11y/alt-text
     return <NextImage src={src} {...props} />
   }
