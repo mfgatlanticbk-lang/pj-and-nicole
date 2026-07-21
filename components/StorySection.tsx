@@ -125,10 +125,10 @@ export const StorySection: React.FC<StorySectionProps> = ({
     if (imageAspect === 'portrait') return 'adaptive'
     if (flipbookPhotos.length === 0) return 'adaptive'
 
-    const probed = flipbookPhotos.filter((photo) => sectionPhotoSizes.has(photo.src))
-    if (probed.length === 0) return 'single'
+    const allProbed = flipbookPhotos.every((photo) => sectionPhotoSizes.has(photo.src))
+    if (!allProbed) return 'single'
 
-    const allProbedLandscape = probed.every((photo) => {
+    const allProbedLandscape = flipbookPhotos.every((photo) => {
       const size = sectionPhotoSizes.get(photo.src)!
       return isLandscapeLike(size.w, size.h)
     })
@@ -301,6 +301,7 @@ export const StorySection: React.FC<StorySectionProps> = ({
               photos={flipbookPhotos}
               variant="story"
               pageLayout={flipbookLayout}
+              knownPhotoSizes={sectionPhotoSizes}
               isDark={isDark}
               rotation={usePortraitSplitDesktop ? rotation : 'md:rotate-0'}
               imageSizes={sizesInline}

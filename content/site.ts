@@ -73,7 +73,7 @@ export const siteConfig = {
     time: "2:00 PM",
     entourageTime: "1:00 PM",
     guestsTime: "1:30 PM",
-    image: "/Details/ceremony_1.webp",
+    image: "/Details/detailsnew.png",
   },
   reception: {
     location: "Palacio Del Sur",

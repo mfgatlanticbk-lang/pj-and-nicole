@@ -3,8 +3,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 
-const TRANSITION_MS = 1000
-const INTERVAL_MS = 3500
+const TRANSITION_MS = 650
+const INTERVAL_MS = 2800
 
 export type FlipbookPhoto = {
   src: string
@@ -16,41 +16,116 @@ export type FlipbookPageLayout = 'single' | 'spread' | 'adaptive'
 type FlipbookSlide = FlipbookPhoto | FlipbookPhoto[]
 type PhotoSize = { w: number; h: number }
 
-function preloadImages(urls: string[]) {
-  urls.forEach((src) => {
-    const img = new window.Image()
-    img.src = src
-  })
+function useLoadedImages(urls: string[]) {
+  const urlsKey = urls.join('|')
+  const [loaded, setLoaded] = useState<Set<string>>(() => new Set())
+
+  const markLoaded = useCallback((src: string) => {
+    if (!src) return
+    setLoaded((prev) => {
+      if (prev.has(src)) return prev
+      const next = new Set(prev)
+      next.add(src)
+      return next
+    })
+  }, [])
+
+  useEffect(() => {
+    const unique = [...new Set(urls.filter(Boolean))]
+    if (unique.length === 0) return
+
+    let cancelled = false
+
+    unique.forEach((src) => {
+      const img = new window.Image()
+      const markLoaded = () => {
+        if (cancelled) return
+        setLoaded((prev) => {
+          if (prev.has(src)) return prev
+          const next = new Set(prev)
+          next.add(src)
+          return next
+        })
+      }
+
+      img.onload = markLoaded
+      img.onerror = markLoaded
+      img.src = src
+      if (img.complete) markLoaded()
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [urlsKey])
+
+  return { loaded, markLoaded }
 }
 
 function isPortraitSize(size: PhotoSize) {
   return size.h > size.w
 }
 
-function sectionHasPortraitPhotos(photos: FlipbookPhoto[], sizes: Map<string, PhotoSize>) {
-  return photos.some((photo) => {
-    const size = sizes.get(photo.src)
-    return size ? isPortraitSize(size) : false
-  })
-}
-
-function slidesWhileProbing(photos: FlipbookPhoto[], sizes: Map<string, PhotoSize>): FlipbookSlide[] {
-  const probed = photos.filter((photo) => sizes.has(photo.src))
-  if (probed.length === 0) return photos
-
-  if (!sectionHasPortraitPhotos(probed, sizes)) {
-    return photos
-  }
-
-  if (probed.length === photos.length) {
-    return buildAdaptiveSlides(photos, sizes)
-  }
-
-  return chunkIntoSpreads(photos)
-}
-
 function isSpreadSlide(slide: FlipbookSlide): slide is FlipbookPhoto[] {
   return Array.isArray(slide)
+}
+
+function slidePhotos(slide: FlipbookSlide): FlipbookPhoto[] {
+  return isSpreadSlide(slide) ? slide : [slide]
+}
+
+function slideIsReady(slide: FlipbookSlide, loaded: Set<string>) {
+  return slidePhotos(slide).every((photo) => !photo.src || loaded.has(photo.src))
+}
+
+function slideSrcSet(slide: FlipbookSlide): Set<string> {
+  return new Set(slidePhotos(slide).map((photo) => photo.src).filter(Boolean))
+}
+
+function slidesShareImage(a: FlipbookSlide, b: FlipbookSlide): boolean {
+  const srcA = slideSrcSet(a)
+  for (const photo of slidePhotos(b)) {
+    if (photo.src && srcA.has(photo.src)) return true
+  }
+  return false
+}
+
+/** Remove duplicate src on the same spread; collapse to single page when needed */
+function sanitizeSlide(slide: FlipbookSlide): FlipbookSlide {
+  if (!isSpreadSlide(slide)) return slide
+
+  const seen = new Set<string>()
+  const unique = slide.filter((photo) => {
+    if (!photo.src || seen.has(photo.src)) return false
+    seen.add(photo.src)
+    return true
+  })
+
+  if (unique.length === 0) return slide[0]
+  if (unique.length === 1) return unique[0]
+  return unique
+}
+
+/** Prefer the next page; if it repeats a photo, skip to at least the page after that */
+function findNextSlideIndex(slides: FlipbookSlide[], currentIndex: number): number {
+  if (slides.length <= 1) return 0
+
+  const current = slides[currentIndex]
+  const total = slides.length
+  const immediate = (currentIndex + 1) % total
+
+  if (!slidesShareImage(current, slides[immediate])) {
+    return immediate
+  }
+
+  for (let offset = 2; offset < total; offset += 1) {
+    const candidate = (currentIndex + offset) % total
+    if (!slidesShareImage(current, slides[candidate])) {
+      return candidate
+    }
+  }
+
+  return immediate
 }
 
 function pickFillPhoto(
@@ -60,6 +135,7 @@ function pickFillPhoto(
   skipIndices: Set<number>,
   startFrom = 0,
   portraitOnly = false,
+  excludeSrcs?: Set<string>,
 ): { photo: FlipbookPhoto; index: number } | null {
   for (let pass = 0; pass < 2; pass += 1) {
     const from = pass === 0 ? startFrom : 0
@@ -70,6 +146,7 @@ function pickFillPhoto(
 
       const candidate = photos[j]
       if (candidate.src === primary.src) continue
+      if (excludeSrcs?.has(candidate.src)) continue
 
       const size = sizes.get(candidate.src)
       if (portraitOnly && size && !isPortraitSize(size)) continue
@@ -81,42 +158,14 @@ function pickFillPhoto(
   return null
 }
 
-function pairSpread(
-  photos: FlipbookPhoto[],
-  primary: FlipbookPhoto,
-  primaryIndex: number,
-  sizes: Map<string, PhotoSize>,
-  consumed: Set<number>,
-  allowReuse: boolean,
-): { spread: FlipbookPhoto[]; consumedIndex: number | null } {
-  const skip = allowReuse ? consumed : new Set([...consumed, primaryIndex])
-
-  const match =
-    pickFillPhoto(photos, primary, sizes, skip, primaryIndex + 1, true) ??
-    pickFillPhoto(photos, primary, sizes, skip, primaryIndex + 1, false) ??
-    (allowReuse
-      ? pickFillPhoto(photos, primary, sizes, new Set([primaryIndex]), 0, true) ??
-        pickFillPhoto(photos, primary, sizes, new Set([primaryIndex]), 0, false)
-      : null)
-
-  if (match) {
-    return {
-      spread: [primary, match.photo],
-      consumedIndex: match.index > primaryIndex && !consumed.has(match.index) ? match.index : null,
-    }
-  }
-
-  return { spread: [primary, primary], consumedIndex: null }
-}
-
-function chunkIntoSpreads(photos: FlipbookPhoto[]): FlipbookPhoto[][] {
+function chunkIntoSpreads(photos: FlipbookPhoto[]): FlipbookSlide[] {
   if (photos.length === 0) return []
 
-  const spreads: FlipbookPhoto[][] = []
+  const spreads: FlipbookSlide[] = []
   for (let i = 0; i < photos.length; i += 2) {
     const left = photos[i]
-    const right = photos[i + 1] ?? photos[(i + 1) % photos.length]
-    spreads.push([left, right])
+    const right = photos[i + 1]
+    spreads.push(right ? [left, right] : left)
   }
   return spreads
 }
@@ -129,6 +178,7 @@ function buildAdaptiveSlides(
 
   const slides: FlipbookSlide[] = []
   const consumed = new Set<number>()
+  let previousSrcs = new Set<string>()
 
   for (let i = 0; i < photos.length; i += 1) {
     if (consumed.has(i)) continue
@@ -136,25 +186,53 @@ function buildAdaptiveSlides(
     const photo = photos[i]
     const size = sizes.get(photo.src)
     const portrait = size ? isPortraitSize(size) : true
+    let slide: FlipbookSlide | null
 
     if (!portrait) {
-      slides.push(photo)
-      continue
+      slide = photo
+    } else {
+      const skip = new Set([...consumed, i])
+      const excludeSrcs = new Set([photo.src, ...previousSrcs])
+      const match =
+        pickFillPhoto(photos, photo, sizes, skip, i + 1, true, excludeSrcs) ??
+        pickFillPhoto(photos, photo, sizes, skip, i + 1, false, excludeSrcs)
+
+      if (match) {
+        slide = [photo, match.photo]
+        consumed.add(match.index)
+      } else {
+        slide = photo
+      }
     }
 
-    const { spread, consumedIndex } = pairSpread(photos, photo, i, sizes, consumed, true)
-    slides.push(spread)
+    slide = sanitizeSlide(slide)
 
-    if (consumedIndex !== null) {
-      consumed.add(consumedIndex)
+    if (slides.length > 0 && slidesShareImage(slides[slides.length - 1]!, slide)) {
+      const prevSrcs = slideSrcSet(slides[slides.length - 1]!)
+      if (isSpreadSlide(slide)) {
+        const filtered = slide.filter((p) => p.src && !prevSrcs.has(p.src))
+        slide =
+          filtered.length === 0
+            ? null
+            : filtered.length === 1
+              ? filtered[0]!
+              : filtered
+      } else if (slide.src && prevSrcs.has(slide.src)) {
+        slide = null
+      }
     }
+
+    if (!slide) continue
+
+    slides.push(slide)
+    previousSrcs = slideSrcSet(slide)
   }
 
   return slides
 }
 
-function slidePhotos(slide: FlipbookSlide): FlipbookPhoto[] {
-  return isSpreadSlide(slide) ? slide : [slide]
+function finalizeSlides(rawSlides: FlipbookSlide[]): FlipbookSlide[] {
+  return rawSlides.map(sanitizeSlide).filter((slide) => slidePhotos(slide).some((photo) => photo.src))
 }
 
 function SinglePhotoPage({
@@ -167,6 +245,8 @@ function SinglePhotoPage({
   photoIndex,
   clickLabel,
   focusRingOffsetClass,
+  isLoaded,
+  onImageLoaded,
 }: {
   photo: FlipbookPhoto
   priority?: boolean
@@ -177,19 +257,28 @@ function SinglePhotoPage({
   photoIndex: number
   clickLabel: string
   focusRingOffsetClass: string
+  isLoaded: boolean
+  onImageLoaded?: (src: string) => void
 }) {
   const rootClassName = `relative w-full overflow-hidden ${containerClassName}`
 
   const imageNode = (
     <div className="relative h-full min-h-[inherit] w-full">
+      {!isLoaded && (
+        <div
+          className="absolute inset-0 animate-pulse bg-motif-deep/[0.06]"
+          aria-hidden
+        />
+      )}
       <Image
         src={photo.src}
         alt={photo.alt ?? 'Love story moment'}
         fill
         sizes={sizes}
-        className={imageClassName}
-        quality={90}
+        className={`${imageClassName} transition-opacity duration-300 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+        quality={85}
         priority={priority}
+        onLoadingComplete={() => onImageLoaded?.(photo.src)}
       />
     </div>
   )
@@ -220,6 +309,8 @@ function SpreadHalf({
   photoIndex,
   clickLabel,
   focusRingOffsetClass,
+  isLoaded,
+  onImageLoaded,
 }: {
   photo?: FlipbookPhoto
   side: 'left' | 'right'
@@ -230,20 +321,29 @@ function SpreadHalf({
   photoIndex: number
   clickLabel: string
   focusRingOffsetClass: string
+  isLoaded: boolean
+  onImageLoaded?: (src: string) => void
 }) {
   const halfClass =
     side === 'left' ? 'album-flipbook-half-left border-r border-motif-silver/20' : 'album-flipbook-half-right'
 
   const content = photo ? (
     <div className="relative h-full w-full min-h-[inherit]">
+      {!isLoaded && (
+        <div
+          className="absolute inset-0 animate-pulse bg-motif-deep/[0.06]"
+          aria-hidden
+        />
+      )}
       <Image
         src={photo.src}
         alt={photo.alt ?? 'Love story moment'}
         fill
         sizes={sizes}
-        className={imageClassName}
-        quality={90}
+        className={`${imageClassName} transition-opacity duration-300 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+        quality={85}
         priority={priority}
+        onLoadingComplete={() => onImageLoaded?.(photo.src)}
       />
     </div>
   ) : (
@@ -271,12 +371,13 @@ function SpreadPhotoPage({
   spreadStartIndex,
   priority,
   sizes,
-  imageClassName,
   spreadImageClassName,
   containerClassName,
   onPhotoClick,
   clickLabel,
   focusRingOffsetClass,
+  loadedImages,
+  onImageLoaded,
 }: {
   spread: FlipbookPhoto[]
   spreadStartIndex: number
@@ -288,9 +389,11 @@ function SpreadPhotoPage({
   onPhotoClick?: (photo: FlipbookPhoto, index: number) => void
   clickLabel: string
   focusRingOffsetClass: string
+  loadedImages: Set<string>
+  onImageLoaded?: (src: string) => void
 }) {
   const left = spread[0]
-  const right = spread[1] ?? spread[0]
+  const right = spread[1]
 
   return (
     <div className={`relative flex w-full flex-row overflow-hidden ${containerClassName}`}>
@@ -305,6 +408,8 @@ function SpreadPhotoPage({
         photoIndex={spreadStartIndex}
         clickLabel={clickLabel}
         focusRingOffsetClass={focusRingOffsetClass}
+        isLoaded={!left?.src || loadedImages.has(left.src)}
+        onImageLoaded={onImageLoaded}
       />
       <SpreadHalf
         photo={right}
@@ -315,6 +420,8 @@ function SpreadPhotoPage({
         photoIndex={spreadStartIndex + 1}
         clickLabel={clickLabel}
         focusRingOffsetClass={focusRingOffsetClass}
+        isLoaded={!right?.src || loadedImages.has(right.src)}
+        onImageLoaded={onImageLoaded}
       />
     </div>
   )
@@ -341,6 +448,8 @@ function FlipbookPage({
   onPhotoClick,
   clickLabel,
   focusRingOffsetClass,
+  loadedImages,
+  onImageLoaded,
 }: {
   slide: FlipbookSlide
   slideIndex: number
@@ -354,6 +463,8 @@ function FlipbookPage({
   onPhotoClick?: (photo: FlipbookPhoto, index: number) => void
   clickLabel: string
   focusRingOffsetClass: string
+  loadedImages: Set<string>
+  onImageLoaded?: (src: string) => void
 }) {
   if (isSpreadSlide(slide)) {
     return (
@@ -368,6 +479,8 @@ function FlipbookPage({
         onPhotoClick={onPhotoClick}
         clickLabel={clickLabel}
         focusRingOffsetClass={focusRingOffsetClass}
+        loadedImages={loadedImages}
+        onImageLoaded={onImageLoaded}
       />
     )
   }
@@ -383,6 +496,8 @@ function FlipbookPage({
       photoIndex={spreadPhotoIndex(slides, slideIndex)}
       clickLabel={clickLabel}
       focusRingOffsetClass={focusRingOffsetClass}
+      isLoaded={!slide.src || loadedImages.has(slide.src)}
+      onImageLoaded={onImageLoaded}
     />
   )
 }
@@ -405,6 +520,8 @@ interface PhotoFlipbookProps {
   onPhotoClick?: (photo: FlipbookPhoto, index: number) => void
   clickLabel?: string
   focusRingOffsetClass?: string
+  /** Pre-measured dimensions from parent — avoids duplicate probing and layout jumps */
+  knownPhotoSizes?: Map<string, PhotoSize>
 }
 
 export function PhotoFlipbook({
@@ -423,36 +540,52 @@ export function PhotoFlipbook({
   onPhotoClick,
   clickLabel = 'Enlarge story photo',
   focusRingOffsetClass = 'focus-visible:ring-offset-motif-cream',
+  knownPhotoSizes,
 }: PhotoFlipbookProps) {
-  const [photoSizes, setPhotoSizes] = useState<Map<string, PhotoSize>>(new Map())
+  const [internalPhotoSizes, setInternalPhotoSizes] = useState<Map<string, PhotoSize>>(new Map())
+  const photoSizes = knownPhotoSizes ?? internalPhotoSizes
 
   useEffect(() => {
-    if (pageLayout !== 'adaptive' || photos.length === 0) return
+    if (knownPhotoSizes || pageLayout !== 'adaptive' || photos.length === 0) return
 
     photos.forEach((photo) => {
-      if (!photo.src) return
+      if (!photo.src || photoSizes.has(photo.src)) return
       const probe = new window.Image()
       probe.onload = () => {
-        setPhotoSizes((prev) => {
+        setInternalPhotoSizes((prev) => {
           if (prev.has(photo.src)) return prev
           const next = new Map(prev)
           next.set(photo.src, { w: probe.naturalWidth, h: probe.naturalHeight })
           return next
         })
       }
+      probe.onerror = () => {
+        setInternalPhotoSizes((prev) => {
+          if (prev.has(photo.src)) return prev
+          const next = new Map(prev)
+          next.set(photo.src, { w: 3, h: 4 })
+          return next
+        })
+      }
       probe.src = photo.src
     })
-  }, [pageLayout, photos])
+  }, [knownPhotoSizes, pageLayout, photos])
+
+  const allPhotoUrls = useMemo(
+    () => photos.map((photo) => photo.src).filter(Boolean),
+    [photos],
+  )
+  const { loaded: loadedImages, markLoaded: markImageLoaded } = useLoadedImages(allPhotoUrls)
 
   const slides = useMemo<FlipbookSlide[]>(() => {
-    if (photos.length === 0) return [{ src: '', alt: 'Story moment' }]
-    if (pageLayout === 'spread') return chunkIntoSpreads(photos)
+    if (photos.length === 0) return []
+    if (pageLayout === 'spread') return finalizeSlides(chunkIntoSpreads(photos))
     if (pageLayout === 'adaptive') {
       const allProbed = photos.every((photo) => photoSizes.has(photo.src))
-      if (!allProbed) return slidesWhileProbing(photos, photoSizes)
-      return buildAdaptiveSlides(photos, photoSizes)
+      if (!allProbed) return finalizeSlides(photos)
+      return finalizeSlides(buildAdaptiveSlides(photos, photoSizes))
     }
-    return photos
+    return finalizeSlides(photos)
   }, [pageLayout, photos, photoSizes])
 
   const slidesKey = useMemo(
@@ -484,24 +617,13 @@ export function PhotoFlipbook({
     setCurrentIndex((prev) => (prev >= slides.length ? 0 : prev))
   }, [slides.length])
 
-  const nextIndex = (currentIndex + 1) % slides.length
+  const nextIndex =
+    slides.length > 0 ? findNextSlideIndex(slides, currentIndex) : 0
   const hasMultipleSlides = slides.length > 1
-  const currentSlide = slides[currentIndex]
-  const incomingSlide = slides[nextIndex]
-  const currentIsSpread = isSpreadSlide(currentSlide)
-
-  useEffect(() => {
-    if (!isVisible) return
-    preloadImages(slides.flatMap((slide) => slidePhotos(slide).map((p) => p.src)).filter(Boolean))
-  }, [isVisible, slides])
-
-  useEffect(() => {
-    if (!isVisible || !hasMultipleSlides) return
-    const upcoming = slidePhotos(slides[nextIndex])
-      .map((p) => p.src)
-      .filter(Boolean)
-    if (upcoming.length > 0) preloadImages(upcoming)
-  }, [isVisible, hasMultipleSlides, nextIndex, slides])
+  const currentSlide = slides[currentIndex] ?? slides[0]
+  const incomingSlide = slides[nextIndex] ?? slides[0]
+  const currentIsSpread = currentSlide ? isSpreadSlide(currentSlide) : false
+  const incomingReady = currentSlide ? slideIsReady(incomingSlide, loadedImages) : false
 
   useEffect(() => {
     const node = containerRef.current
@@ -521,16 +643,16 @@ export function PhotoFlipbook({
   }, [])
 
   const completeFlip = useCallback(() => {
-    setCurrentIndex((prev) => (prev + 1) % slides.length)
+    setCurrentIndex((prev) => findNextSlideIndex(slides, prev))
     setIsFlipping(false)
-  }, [slides.length])
+  }, [slides])
 
   const startFlip = useCallback(() => {
-    if (!hasMultipleSlides || isFlipping) return
+    if (!hasMultipleSlides || isFlipping || !incomingReady) return
     setIsFlipping(true)
     if (flipTimeoutRef.current) clearTimeout(flipTimeoutRef.current)
     flipTimeoutRef.current = setTimeout(completeFlip, TRANSITION_MS)
-  }, [completeFlip, hasMultipleSlides, isFlipping])
+  }, [completeFlip, hasMultipleSlides, incomingReady, isFlipping])
 
   useEffect(() => {
     if (!hasMultipleSlides || !isVisible || isPaused || isFlipping) return
@@ -539,7 +661,7 @@ export function PhotoFlipbook({
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current)
     }
-  }, [hasMultipleSlides, isVisible, isPaused, isFlipping, startFlip])
+  }, [hasMultipleSlides, isVisible, isPaused, isFlipping, incomingReady, startFlip])
 
   useEffect(() => {
     return () => {
@@ -579,6 +701,14 @@ export function PhotoFlipbook({
 
   const showBookChrome = variant === 'album' || (isStoryFlipbook && (currentIsSpread || incomingIsSpread))
 
+  if (photos.length === 0) {
+    return (
+      <div className={`relative w-full ${className}`} aria-hidden>
+        <div className={`${containerClassName} animate-pulse bg-motif-deep/[0.06] rounded-sm`} />
+      </div>
+    )
+  }
+
   const flipbookInner = (
     <div
       ref={containerRef}
@@ -604,9 +734,9 @@ export function PhotoFlipbook({
       <div className={albumShell} style={stageMinHeight}>
         <div className={`relative w-full h-full overflow-hidden ${variant === 'story' ? imageBg : ''}`}>
           <div className="album-flipbook-stage relative w-full h-full min-h-[inherit]">
-            {hasMultipleSlides && (
+            {hasMultipleSlides && incomingReady && (
               <div
-                className={`absolute inset-0 min-h-[inherit] transition-opacity duration-300 ease-out ${
+                className={`absolute inset-0 min-h-[inherit] transition-opacity duration-200 ease-out ${
                   isFlipping ? 'opacity-100 z-0' : 'opacity-0 z-0 pointer-events-none'
                 }`}
                 aria-hidden={!isFlipping}
@@ -623,6 +753,8 @@ export function PhotoFlipbook({
                   onPhotoClick={onPhotoClick}
                   clickLabel={clickLabel}
                   focusRingOffsetClass={focusRingOffsetClass}
+                  loadedImages={loadedImages}
+                  onImageLoaded={markImageLoaded}
                 />
               </div>
             )}
@@ -647,6 +779,8 @@ export function PhotoFlipbook({
                   onPhotoClick={onPhotoClick}
                   clickLabel={clickLabel}
                   focusRingOffsetClass={focusRingOffsetClass}
+                  loadedImages={loadedImages}
+                  onImageLoaded={markImageLoaded}
                 />
               </div>
               <div

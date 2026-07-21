@@ -397,7 +397,7 @@ html {
 }
 
 .album-flipbook-page-turning {
-  animation: album-page-turn-out 1s cubic-bezier(0.42, 0, 0.22, 1) forwards;
+  animation: album-page-turn-out 0.65s cubic-bezier(0.42, 0, 0.22, 1) forwards;
 }
 
 @keyframes album-page-turn-out {
